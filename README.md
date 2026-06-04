@@ -85,3 +85,4 @@ Speedup:        11.10x
 - `--gif`: render a 60-frame animated GIF instead of a PNG.
 - `--parallel` / `--no-parallel`: enable or disable Rayon parallel rendering.
 - `--output`: output filename or basename. The program adds `.png` or `.gif` when no suffix is provided.
+
