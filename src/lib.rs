@@ -97,10 +97,15 @@ pub fn render_mandelbulb(width: usize, height: usize, power: f64, max_steps: usi
         let y_norm = 2.0 * y / height as f64 - 1.0;
         let ray_dir = Vec3::new(x_norm, y_norm, 1.0).normalize();
         let mut total_distance = 0.0;
-        for _ in 0..256 {
+        let mut hit_iters = 0;
+        for step in 0..256 {
             let p = ray_origin + ray_dir * total_distance;
             let sdf_dist = mandelbulb_sdf(p, power, max_steps);
-            if total_distance > 100.0 || sdf_dist < 0.001 {
+            if total_distance > 100.0 {
+                break;
+            }
+            if sdf_dist < 0.001 {
+                hit_iters = step;
                 break;
             }
             total_distance += sdf_dist;
@@ -112,9 +117,10 @@ pub fn render_mandelbulb(width: usize, height: usize, power: f64, max_steps: usi
             let normal = estimate_normal(p, power, max_steps);
             let light_dir = Vec3::new(1.0, 1.0, -1.0).normalize();
             let intensity = normal.dot_product(&light_dir).max(0.0);
-            pixel
-                .iter_mut()
-                .for_each(|v| *v = (255.0 * intensity) as u8);
+            let t = (hit_iters as f64 / 50.0).min(1.0);
+            pixel[0] = (255.0 * intensity * t) as u8;
+            pixel[1] = (255.0 * intensity * (1.0 - t)) as u8;
+            pixel[2] = 0;
         }
     });
     buffer
