@@ -1,5 +1,6 @@
 use std::ops::{Add, Mul, Sub};
 
+const EPSILON: f64 = 1e-12;
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3 {
     pub x: f64,
@@ -17,6 +18,9 @@ impl Vec3 {
 
     pub fn normalize(&self) -> Self {
         let length = self.length();
+        if length < EPSILON {
+            return Self::new(0.0, 0.0, 0.0);
+        }
         Self::new(self.x / length, self.y / length, self.z / length)
     }
 
