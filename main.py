@@ -10,8 +10,8 @@ app = typer.Typer(help="Mandelbulb fractal renderer")
 
 @app.command()
 def render(
-    width: int = typer.Option(1920, help="Width of the output image"),
-    height: int = typer.Option(1080, help="Height of the output image"),
+    width: int = typer.Option(1000, help="Width of the output image"),
+    height: int = typer.Option(600, help="Height of the output image"),
     power: int = typer.Option(8, help="Power of the Mandelbulb"),
     max_steps: int = typer.Option(
         100, help="Maximum number of iterations of ray marching"
