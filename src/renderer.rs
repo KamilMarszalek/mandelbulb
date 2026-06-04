@@ -20,7 +20,7 @@ pub fn render_mandelbulb(
     cam_y: f64,
     cam_z: f64,
     mode: &str,
-    sequential: bool,
+    parallel: bool,
 ) -> Vec<u8> {
     let colorizer: Box<dyn Colorizer> = match mode {
         "gray" | "grayscale" => Box::new(GrayscaleColorizer),
@@ -37,7 +37,7 @@ pub fn render_mandelbulb(
     let world_up = Vec3::new(0.0, 1.0, 0.0);
     let right = forward.cross_product(&world_up).normalize();
     let up = right.cross_product(&forward).normalize();
-    if !sequential {
+    if parallel {
         buffer.par_chunks_mut(3).enumerate().for_each(|(i, pixel)| {
             render_pixel(
                 i,
