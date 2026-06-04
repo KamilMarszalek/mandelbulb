@@ -131,18 +131,24 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "matplotlib" },
-    { name = "maturin" },
     { name = "pillow" },
     { name = "typer" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "maturin" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "matplotlib", specifier = ">=3.10.9" },
-    { name = "maturin", specifier = ">=1.13.3" },
     { name = "pillow", specifier = ">=12.2.0" },
     { name = "typer", specifier = ">=0.26.7" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "maturin", specifier = ">=1.13.3" }]
 
 [[package]]
 name = "markdown-it-py"
