@@ -140,3 +140,35 @@ fn render_pixel(
         pixel[2] = colors[2];
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::render_mandelbulb;
+
+    #[test]
+    fn render_mandelbulb_returns_rgb_buffer_for_requested_dimensions() {
+        let width = 4;
+        let height = 3;
+
+        let buffer = render_mandelbulb(
+            width, height, 8.0, 4, 8, 0.0, 0.0, 2.5, "rgb", false,
+        );
+
+        assert_eq!(buffer.len(), width * height * 3);
+    }
+
+    #[test]
+    fn sequential_and_parallel_rendering_match_for_small_image() {
+        let width = 16;
+        let height = 10;
+
+        let sequential = render_mandelbulb(
+            width, height, 8.0, 4, 8, 0.0, 0.0, 2.5, "rgb", false,
+        );
+        let parallel = render_mandelbulb(
+            width, height, 8.0, 4, 8, 0.0, 0.0, 2.5, "rgb", true,
+        );
+
+        assert_eq!(sequential, parallel);
+    }
+}
