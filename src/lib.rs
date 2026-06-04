@@ -1,3 +1,9 @@
+use pyo3::{
+    Bound, PyResult, pyfunction, pymodule,
+    types::{PyModule, PyModuleMethods},
+    wrap_pyfunction,
+};
+use rayon::prelude::*;
 use std::ops::{Add, Mul, Sub};
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3 {
@@ -71,4 +77,55 @@ pub fn mandelbulb_sdf(point: Vec3, power: f64, max_steps: usize) -> f64 {
     }
     let r = z.length();
     0.5 * r.ln() * (r / dr)
+}
+
+#[pymodule]
+fn mandelbulb(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(render_mandelbulb, m)?)?;
+    Ok(())
+}
+
+#[pyfunction]
+pub fn render_mandelbulb(width: usize, height: usize, power: f64, max_steps: usize) -> Vec<u8> {
+    let mut buffer = vec![0u8; width * height * 3];
+    buffer.par_chunks_mut(3).enumerate().for_each(|(i, pixel)| {
+        let x = (i % width) as f64;
+        let y = (i / width) as f64;
+        let ray_origin = Vec3::new(0.0, 0.0, -2.5);
+        let aspect = width as f64 / height as f64;
+        let x_norm = (2.0 * x / width as f64 - 1.0) * aspect;
+        let y_norm = 2.0 * y / height as f64 - 1.0;
+        let ray_dir = Vec3::new(x_norm, y_norm, 1.0).normalize();
+        let mut total_distance = 0.0;
+        for _ in 0..256 {
+            let p = ray_origin + ray_dir * total_distance;
+            let sdf_dist = mandelbulb_sdf(p, power, max_steps);
+            if total_distance > 100.0 || sdf_dist < 0.001 {
+                break;
+            }
+            total_distance += sdf_dist;
+        }
+        if total_distance > 100.0 {
+            pixel.iter_mut().for_each(|v| *v = 0u8);
+        } else {
+            let p = ray_origin + ray_dir * total_distance;
+            let normal = estimate_normal(p, power, max_steps);
+            let light_dir = Vec3::new(1.0, 1.0, -1.0).normalize();
+            let intensity = normal.dot_product(&light_dir).max(0.0);
+            pixel
+                .iter_mut()
+                .for_each(|v| *v = (255.0 * intensity) as u8);
+        }
+    });
+    buffer
+}
+
+pub fn estimate_normal(p: Vec3, power: f64, max_steps: usize) -> Vec3 {
+    let n_x = mandelbulb_sdf(Vec3::new(p.x + 0.001, p.y, p.z), power, max_steps)
+        - mandelbulb_sdf(Vec3::new(p.x - 0.001, p.y, p.z), power, max_steps);
+    let n_y = mandelbulb_sdf(Vec3::new(p.x, p.y + 0.001, p.z), power, max_steps)
+        - mandelbulb_sdf(Vec3::new(p.x, p.y - 0.001, p.z), power, max_steps);
+    let n_z = mandelbulb_sdf(Vec3::new(p.x, p.y, p.z + 0.001), power, max_steps)
+        - mandelbulb_sdf(Vec3::new(p.x, p.y, p.z - 0.001), power, max_steps);
+    Vec3::new(n_x, n_y, n_z).normalize()
 }
