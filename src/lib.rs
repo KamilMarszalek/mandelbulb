@@ -8,17 +8,16 @@ pub struct Vec3 {
 
 pub const ESCAPE: f64 = 2.0;
 impl Vec3 {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Self { x, y, z }
+    }
     pub fn length(&self) -> f64 {
         (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
     }
 
     pub fn normalize(&self) -> Self {
         let length = self.length();
-        Self {
-            x: self.x / length,
-            y: self.y / length,
-            z: self.z / length,
-        }
+        Self::new(self.x / length, self.y / length, self.z / length)
     }
 
     pub fn dot_product(&self, other: &Self) -> f64 {
@@ -30,11 +29,7 @@ impl Sub for Vec3 {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        Self {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-            z: self.z - rhs.z,
-        }
+        Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
     }
 }
 
@@ -42,11 +37,7 @@ impl Add for Vec3 {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Self {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z,
-        }
+        Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
 }
 
@@ -54,11 +45,7 @@ impl Mul<f64> for Vec3 {
     type Output = Self;
 
     fn mul(self, rhs: f64) -> Self::Output {
-        Self {
-            x: self.x * rhs,
-            y: self.y * rhs,
-            z: self.z * rhs,
-        }
+        Self::new(self.x * rhs, self.y * rhs, self.z * rhs)
     }
 }
 
@@ -74,11 +61,12 @@ pub fn mandelbulb_sdf(point: Vec3, power: f64, max_steps: usize) -> f64 {
         let theta = power * (z.z / r).acos();
         let phi = power * z.y.atan2(z.x);
         let zr = r.powf(power);
-        let new_z = Vec3 {
-            x: zr * theta.sin() * phi.cos(),
-            y: zr * theta.sin() * phi.sin(),
-            z: zr * theta.cos(),
-        };
+        let new_z = Vec3::new(
+            zr * theta.sin() * phi.cos(),
+            zr * theta.sin() * phi.sin(),
+            zr * theta.cos(),
+        );
+
         z = point + new_z;
     }
     let r = z.length();
