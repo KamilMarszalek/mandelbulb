@@ -29,12 +29,6 @@ cargo test
 uv run pytest
 ```
 
-The Python tests fake the Rust extension for CLI/helper coverage, so they do not require a rendering build. To test the installed Python extension manually, build it first:
-
-```bash
-uv run maturin develop --release
-```
-
 ## Example Commands
 
 ```bash
